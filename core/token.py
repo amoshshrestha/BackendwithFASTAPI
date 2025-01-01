@@ -31,7 +31,7 @@ def verify_token(token: str, credentials_exception):
         if email is None:
             raise credentials_exception
 
-        return TokenData(username=email)
+        return TokenData(email=email)
 
     except jwt.ExpiredSignatureError:
         raise HTTPException(
@@ -57,7 +57,7 @@ def verify_refresh_token(refresh_token: str, credentials_exception):
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
-        return TokenData(username=email)
+        return TokenData(email=email)
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

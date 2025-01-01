@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Enum
+from geoalchemy2 import Geography
 
 from backend.app.database.database import Base
 
@@ -11,4 +12,4 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password = Column(String)
     role = Column(Enum("normal_user", "service_provider", name="user_roles"))
-    location = Column(String, nullable=True)
+    location = Column(Geography(geometry_type='POINT', srid=4326), nullable=True)

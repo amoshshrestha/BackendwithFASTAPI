@@ -4,6 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from backend.app.core.hashing import Hash
+from backend.app.core.oauth2 import get_current_user
 from backend.app.core.token import (
     create_access_token,
     create_refresh_token,
@@ -12,7 +13,7 @@ from backend.app.core.token import (
 from backend.app.database.database import get_db
 from backend.app.models.user import User as models_user
 from backend.app.models.admin import Admin as models_admin
-from backend.app.schemas.token import Token
+from backend.app.schemas.token import Token, TokenData
 
 router = APIRouter(tags=["authentication"])
 
@@ -104,11 +105,24 @@ def refresh_access_token(refresh_token: str):
             detail="Invalid or expired refresh token",
         )
 
-    new_access_token = create_access_token(data={"sub": token_data.username})
-    new_refresh_token = create_refresh_token(data={"sub": token_data.username})
+    new_access_token = create_access_token(data={"sub": token_data.email})
+    new_refresh_token = create_refresh_token(data={"sub": token_data.email})
 
     return Token(
         access_token=new_access_token,
         token_type="bearer",
         refresh_token=new_refresh_token,
     )
+
+@router.get("/profile")
+def get_profile(current_user: TokenData = Depends(get_current_user)):
+    profile = current_user.profile
+    return {
+        "email": current_user.email,  # Access the email attribute
+        "profile": {
+            "id": getattr(profile, "id", None),  # Safely access 'id' attribute
+            "name": getattr(profile, "name", None),  # Safely access 'name' attribute
+            "Location": getattr(profile, "location", None),  # Safely access 'username' attribute
+        },
+    }
+
